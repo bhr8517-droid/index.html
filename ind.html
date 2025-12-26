@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>پویش مردمی</title>
+  <style>
+    body { font-family: sans-serif; background:#f3f3f3; direction:rtl }
+    .box {
+      max-width:600px; margin:60px auto; background:#fff;
+      padding:25px; border-radius:14px
+    }
+    input, textarea {
+      width:100%; padding:10px; margin:8px 0 14px;
+      border-radius:6px; border:1px solid #ccc
+    }
+    button {
+      width:100%; padding:12px; background:#1976d2;
+      color:#fff; border:none; border-radius:8px
+    }
+    #status { margin-top:12px }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h3>ارسال پیام به مسئولین</h3>
+
+  <input id="name" placeholder="نام و نام خانوادگی">
+  <input id="title" placeholder="عنوان / سمت فرستنده">
+  <textarea id="message" placeholder="متن پیام خطاب به مسئولین"></textarea>
+
+  <div id="captchaBox"></div>
+  <input id="captchaAnswer" placeholder="پاسخ کپچا">
+
+  <button onclick="sendMessage()">ارسال پیام</button>
+  <div id="status"></div>
+</div>
+
+<script>
+const a = Math.floor(Math.random() * 10 + 1);
+const b = Math.floor(Math.random() * 10 + 1);
+document.getElementById("captchaBox").innerText =
+  `کپچا: ${a} + ${b} = ؟`;
+
+function generateCode() {
+  return "PX-" + Math.random().toString(16).substr(2, 6).toUpperCase();
+}
+
+async function sendMessage() {
+  const name = nameInput.value.trim();
+  const title = titleInput.value.trim();
+  const message = messageInput.value.trim();
+  const answer = captchaAnswer.value.trim();
+  const status = document.getElementById("status");
+
+  if (!name || !title || !message || !answer) {
+    status.innerText = "همه فیلدها الزامی است";
+    return;
+  }
+
+  const code = generateCode();
+
+  const res = await fetch("https://nsim.bhr8517.workers.dev/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name, title, message, code,
+      captcha: a + b,
+      answer
+    })
+  });
+
+  if (res.ok) {
+    status.innerHTML = `
+      ✅ پیام شما با موفقیت ثبت شد<br>
+      🆔 کد پیگیری: <b>${code}</b>
+    `;
+  } else {
+    status.innerText = "خطا یا محدودیت ارسال، کمی بعد تلاش کنید";
+  }
+}
+</script>
+
+</body>
+</html>
